@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
+import { db } from '../../firebase'
 import { professions, getServicesByProfession, priceTiers } from '../../data/services'
 import MapPicker from '../../components/MapPicker'
 import './NewRequest.css'
@@ -62,21 +64,36 @@ function NewRequest() {
         }
     }
 
-    const handleSubmit = () => {
-        // TODO: Submit to backend
-        console.log({
-            profession: selectedProfession,
-            service: selectedService,
-            priceTier: selectedPriceTier,
-            description,
-            images,
-            video,
-            location,
-            timing
-        })
+    const handleSubmit = async () => {
+        try {
+            // Save order to Firestore
+            const orderData = {
+                professionId: selectedProfession.id,
+                professionNameAr: selectedProfession.nameAr,
+                serviceId: selectedService.id,
+                serviceNameAr: selectedService.nameAr,
+                priceTier: selectedPriceTier,
+                price: selectedService.prices[selectedPriceTier],
+                description: description || '',
+                location: location,
+                timing: timing,
+                status: 'pending',
+                createdAt: serverTimestamp(),
+                customerId: localStorage.getItem('userId') || 'guest',
+                customerName: localStorage.getItem('userName') || 'عميل'
+            }
 
-        alert('تم إرسال الطلب بنجاح!')
-        navigate('/customer/home')
+            console.log('Saving order:', orderData)
+
+            const docRef = await addDoc(collection(db, 'orders'), orderData)
+
+            console.log('Order saved with ID:', docRef.id)
+            alert('تم إرسال الطلب بنجاح!')
+            navigate('/customer/home')
+        } catch (error) {
+            console.error('Error saving order:', error)
+            alert('حدث خطأ أثناء إرسال الطلب: ' + error.message)
+        }
     }
 
     return (
