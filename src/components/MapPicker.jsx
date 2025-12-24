@@ -5,6 +5,7 @@ import { GOOGLE_MAPS_API_KEY, defaultCenter, mapContainerStyle, mapOptions } fro
 function MapPicker({ onLocationSelect, initialLocation }) {
     const [selectedLocation, setSelectedLocation] = useState(initialLocation || defaultCenter)
     const [address, setAddress] = useState('')
+    const [gpsStatus, setGpsStatus] = useState('idle') // idle, loading, success, failed
 
     const { isLoaded } = useJsApiLoader({
         id: 'google-map-script',
@@ -17,6 +18,11 @@ function MapPicker({ onLocationSelect, initialLocation }) {
             lng: e.latLng.lng()
         }
         setSelectedLocation(newLocation)
+
+        // Clear GPS failed status when user manually selects location
+        if (gpsStatus === 'failed') {
+            setGpsStatus('idle')
+        }
 
         // Immediately call onLocationSelect with coordinates
         onLocationSelect({
@@ -45,10 +51,11 @@ function MapPicker({ onLocationSelect, initialLocation }) {
                 })
             }
         })
-    }, [onLocationSelect])
+    }, [onLocationSelect, gpsStatus])
 
     const getCurrentLocation = () => {
         if (navigator.geolocation) {
+            setGpsStatus('loading')
             navigator.geolocation.getCurrentPosition(
                 (position) => {
                     const newLocation = {
@@ -56,6 +63,7 @@ function MapPicker({ onLocationSelect, initialLocation }) {
                         lng: position.coords.longitude
                     }
                     setSelectedLocation(newLocation)
+                    setGpsStatus('success')
 
                     // Immediately call onLocationSelect with coordinates
                     onLocationSelect({
@@ -87,11 +95,12 @@ function MapPicker({ onLocationSelect, initialLocation }) {
                 },
                 (error) => {
                     console.error('Error getting location:', error)
-                    alert('لم نتمكن من الحصول على موقعك. يرجى تحديد الموقع على الخريطة.')
+                    setGpsStatus('failed')
+                    // Don't show alert - let the UI guide the user instead
                 }
             )
         } else {
-            alert('المتصفح لا يدعم تحديد الموقع')
+            setGpsStatus('failed')
         }
     }
 
@@ -105,30 +114,65 @@ function MapPicker({ onLocationSelect, initialLocation }) {
                 type="button"
                 className="location-btn"
                 onClick={getCurrentLocation}
+                disabled={gpsStatus === 'loading'}
                 style={{
                     width: '100%',
                     padding: '12px',
-                    background: '#2196F3',
+                    background: gpsStatus === 'loading' ? '#999' : '#2196F3',
                     color: 'white',
                     border: 'none',
                     borderRadius: '8px',
-                    cursor: 'pointer',
+                    cursor: gpsStatus === 'loading' ? 'not-allowed' : 'pointer',
                     marginBottom: '15px',
-                    fontSize: '1rem'
+                    fontSize: '1rem',
+                    transition: 'all 0.3s ease'
                 }}
             >
-                📍 استخدام موقعي الحالي
+                {gpsStatus === 'loading' ? '⏳ جاري تحديد الموقع...' : '📍 استخدام موقعي الحالي'}
             </button>
 
-            <GoogleMap
-                mapContainerStyle={mapContainerStyle}
-                center={selectedLocation}
-                zoom={15}
-                onClick={onMapClick}
-                options={mapOptions}
-            >
-                <Marker position={selectedLocation} />
-            </GoogleMap>
+            {/* GPS Failed - Fallback Message */}
+            {gpsStatus === 'failed' && (
+                <div style={{
+                    padding: '15px',
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    color: 'white',
+                    borderRadius: '12px',
+                    marginBottom: '15px',
+                    textAlign: 'center',
+                    boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
+                    animation: 'pulse 2s ease-in-out infinite'
+                }}>
+                    <div style={{ fontSize: '2rem', marginBottom: '8px' }}>🗺️</div>
+                    <strong style={{ fontSize: '1.1rem', display: 'block', marginBottom: '5px' }}>
+                        لم نتمكن من تحديد موقعك تلقائياً
+                    </strong>
+                    <p style={{ margin: '0', fontSize: '0.95rem', opacity: 0.95 }}>
+                        👇 يرجى النقر على الخريطة أدناه لتحديد موقعك يدوياً
+                    </p>
+                </div>
+            )}
+
+            {/* Map Container with Highlight on GPS Failure */}
+            <div style={{
+                border: gpsStatus === 'failed' ? '3px solid #667eea' : '2px solid #ddd',
+                borderRadius: '12px',
+                overflow: 'hidden',
+                boxShadow: gpsStatus === 'failed'
+                    ? '0 0 20px rgba(102, 126, 234, 0.5)'
+                    : '0 2px 8px rgba(0,0,0,0.1)',
+                transition: 'all 0.3s ease'
+            }}>
+                <GoogleMap
+                    mapContainerStyle={mapContainerStyle}
+                    center={selectedLocation}
+                    zoom={15}
+                    onClick={onMapClick}
+                    options={mapOptions}
+                >
+                    <Marker position={selectedLocation} />
+                </GoogleMap>
+            </div>
 
             {address && (
                 <div style={{
@@ -146,11 +190,25 @@ function MapPicker({ onLocationSelect, initialLocation }) {
             <p style={{
                 marginTop: '10px',
                 fontSize: '0.9rem',
-                color: '#666',
-                textAlign: 'center'
+                color: gpsStatus === 'failed' ? '#667eea' : '#666',
+                textAlign: 'center',
+                fontWeight: gpsStatus === 'failed' ? 'bold' : 'normal',
+                transition: 'all 0.3s ease'
             }}>
                 💡 انقر على الخريطة لتحديد الموقع بدقة
             </p>
+
+            {/* Add CSS animation for pulse effect */}
+            <style>{`
+                @keyframes pulse {
+                    0%, 100% {
+                        transform: scale(1);
+                    }
+                    50% {
+                        transform: scale(1.02);
+                    }
+                }
+            `}</style>
         </div>
     )
 }
