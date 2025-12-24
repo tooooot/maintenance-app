@@ -1,0 +1,269 @@
+.worker-dashboard {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 2rem;
+}
+
+.dashboard-header {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-header h1 {
+    margin: 0 0 0.5rem 0;
+    color: #1f2937;
+}
+
+.dashboard-header p {
+    margin: 0 0 1rem 0;
+    color: #6b7280;
+}
+
+.availability-btn {
+    padding: 0.75rem 2rem;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.availability-btn.available {
+    background: #10b981;
+    color: white;
+}
+
+.availability-btn.unavailable {
+    background: #6b7280;
+    color: white;
+}
+
+.availability-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Orders Section */
+.orders-section {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.orders-section.active-section {
+    border-right: 4px solid #3b82f6;
+}
+
+.orders-section h2 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    color: #1f2937;
+}
+
+.unavailable-notice {
+    background: #fef3c7;
+    border: 2px solid #f59e0b;
+    border-radius: 12px;
+    padding: 1rem;
+    text-align: center;
+    color: #92400e;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: #9ca3af;
+}
+
+.empty-state .hint {
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+
+/* Orders Grid */
+.orders-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+}
+
+.order-card {
+    background: #f9fafb;
+    border-radius: 12px;
+    padding: 1.5rem;
+    border-right: 4px solid #e5e7eb;
+    transition: all 0.2s;
+}
+
+.order-card:hover {
+    background: #f3f4f6;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.order-card.active-order {
+    border-right-color: #3b82f6;
+    background: #eff6ff;
+}
+
+.order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.order-id {
+    font-family: monospace;
+    font-weight: bold;
+    color: #6b7280;
+}
+
+.order-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.order-badge.new {
+    background: #10b981;
+    color: white;
+}
+
+.order-status {
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: white;
+}
+
+.order-status.accepted {
+    background: #3b82f6;
+}
+
+.order-status.in_progress {
+    background: #8b5cf6;
+}
+
+.order-body {
+    margin-bottom: 1rem;
+}
+
+.order-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    color: #1f2937;
+}
+
+.order-info .icon {
+    font-size: 1.2rem;
+}
+
+.order-info .price {
+    font-weight: bold;
+    color: #10b981;
+    font-size: 1.1rem;
+}
+
+.order-info .location {
+    font-size: 0.9rem;
+    color: #3b82f6;
+}
+
+.order-description {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+    padding: 0.75rem;
+    background: white;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: #6b7280;
+}
+
+/* Order Actions */
+.order-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.btn {
+    flex: 1;
+    padding: 0.75rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+}
+
+.btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-accept {
+    background: #10b981;
+    color: white;
+}
+
+.btn-reject {
+    background: #ef4444;
+    color: white;
+}
+
+.btn-navigate {
+    background: #3b82f6;
+    color: white;
+}
+
+.btn-start {
+    background: #8b5cf6;
+    color: white;
+}
+
+.btn-complete {
+    background: #10b981;
+    color: white;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .worker-dashboard {
+        padding: 1rem;
+    }
+
+    .orders-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .order-actions {
+        flex-direction: column;
+    }
+
+    .btn {
+        width: 100%;
+    }
+}

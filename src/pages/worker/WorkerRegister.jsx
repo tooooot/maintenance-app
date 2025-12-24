@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { collection, addDoc } from 'firebase/firestore'
+import { db } from '../../firebase'
 import { professions, getServicesByProfession, priceTiers } from '../../data/services'
 import './WorkerRegister.css'
 
@@ -43,20 +45,33 @@ function WorkerRegister() {
         return allServices.every(s => servicePricing[s.id])
     }
 
-    const handleSubmit = () => {
-        // TODO: Submit to backend
-        console.log({
-            name,
-            phone,
-            photo,
-            professions: selectedProfessions,
-            experience,
-            workArea,
-            servicePricing
-        })
+    const handleSubmit = async () => {
+        try {
+            // Save to Firestore
+            const workerData = {
+                name,
+                phone,
+                photo,
+                professions: selectedProfessions,
+                experience,
+                workArea,
+                servicePricing,
+                createdAt: new Date(),
+                status: 'active'
+            }
 
-        alert('تم إرسال طلب التسجيل! سيتم مراجعته خلال ساعات.')
-        navigate('/worker/home')
+            const docRef = await addDoc(collection(db, 'workers'), workerData)
+
+            // Save to localStorage with ID
+            const workerWithId = { ...workerData, id: docRef.id }
+            localStorage.setItem('workerData', JSON.stringify(workerWithId))
+
+            alert('تم إرسال طلب التسجيل! سيتم مراجعته خلال ساعات.')
+            navigate('/worker/home')
+        } catch (error) {
+            console.error('Error submitting worker registration:', error)
+            alert('حدث خطأ أثناء التسجيل. يرجى المحاولة مرة أخرى.')
+        }
     }
 
     return (

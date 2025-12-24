@@ -1,5 +1,6 @@
 import { Routes, Route } from 'react-router-dom'
 import WorkerRegister from './WorkerRegister'
+import WorkerDashboard from './WorkerDashboard'
 
 function WorkerHome() {
     return (
