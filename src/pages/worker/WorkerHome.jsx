@@ -16,28 +16,6 @@ function WorkerHome() {
     )
 }
 
-function WorkerDashboard() {
-    return (
-        <div style={{ padding: '20px' }}>
-            <h1>لوحة تحكم العامل</h1>
-            <p>مرحباً بك!</p>
-            <div style={{ marginTop: '20px' }}>
-                <button style={{
-                    padding: '15px 30px',
-                    background: '#4CAF50',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '10px',
-                    fontSize: '1rem',
-                    cursor: 'pointer'
-                }}>
-                    أنا متاح الآن
-                </button>
-            </div>
-        </div>
-    )
-}
-
 function WorkerOrders() {
     return (
         <div style={{ padding: '20px' }}>
