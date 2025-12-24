@@ -1,5 +1,5 @@
 // Google Maps configuration
-export const GOOGLE_MAPS_API_KEY = 'YOUR_GOOGLE_MAPS_API_KEY'; // استبدل بمفتاح Google Maps الخاص بك
+export const GOOGLE_MAPS_API_KEY = 'AIzaSyBYSynLaOliNigg0Vo6myxWeKyYmiPAwCo'; // استبدل بمفتاح Google Maps الخاص بك
 
 export const defaultCenter = {
     lat: 24.7136, // الرياض
