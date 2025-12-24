@@ -123,7 +123,14 @@ function WorkerRegister() {
 
                         <div className="form-group">
                             <label>سنوات الخبرة (تقديري) *</label>
-                            <select value={experience} onChange={(e) => setExperience(e.target.value)} required>
+                            <select
+                                value={experience}
+                                onChange={(e) => {
+                                    console.log('Experience selected:', e.target.value)
+                                    setExperience(e.target.value)
+                                }}
+                                required
+                            >
                                 <option value="">اختر...</option>
                                 <option value="0-1">أقل من سنة</option>
                                 <option value="1-3">1-3 سنوات</option>
@@ -135,7 +142,14 @@ function WorkerRegister() {
 
                         <button
                             className="next-btn"
-                            onClick={() => setStep(2)}
+                            onClick={() => {
+                                console.log('Step 1 validation:', { name, phone, experience, disclaimerAccepted })
+                                if (name && phone && experience && disclaimerAccepted) {
+                                    setStep(2)
+                                } else {
+                                    alert('يرجى ملء جميع الحقول المطلوبة')
+                                }
+                            }}
                             disabled={!name || !phone || !experience || !disclaimerAccepted}
                         >
                             التالي
