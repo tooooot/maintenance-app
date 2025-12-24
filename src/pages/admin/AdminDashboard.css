@@ -59,6 +59,10 @@
     border-right: 4px solid #8b5cf6;
 }
 
+.stat-card.revenue {
+    border-right: 4px solid #10b981;
+}
+
 .stat-icon {
     font-size: 2.5rem;
 }
@@ -73,6 +77,92 @@
     margin: 0;
     color: #6b7280;
     font-size: 0.9rem;
+}
+
+/* Pending Workers Section */
+.pending-workers-section {
+    border-right: 4px solid #f59e0b;
+}
+
+.workers-approval-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+.worker-approval-card {
+    background: #fef3c7;
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 2px solid #f59e0b;
+}
+
+.worker-approval-card .worker-info h3 {
+    margin: 0 0 0.5rem 0;
+    color: #92400e;
+}
+
+.worker-approval-card .worker-info p {
+    margin: 0.25rem 0;
+    color: #78350f;
+}
+
+.approval-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.btn-approve {
+    background: #10b981;
+    color: white;
+}
+
+.btn-reject {
+    background: #ef4444;
+    color: white;
+}
+
+/* Admin Actions */
+.admin-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 2px solid #e5e7eb;
+}
+
+.btn {
+    flex: 1;
+    padding: 0.75rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-cancel {
+    background: #ef4444;
+    color: white;
+}
+
+.btn-reassign {
+    background: #3b82f6;
+    color: white;
+}
+
+.btn-suspend {
+    background: #f59e0b;
+    color: white;
+    margin-top: 0.5rem;
+    width: 100%;
 }
 
 /* Orders Section */

@@ -1,17 +1,21 @@
 import { useState, useEffect } from 'react'
-import { collection, query, orderBy, onSnapshot } from 'firebase/firestore'
+import { collection, query, orderBy, onSnapshot, doc, updateDoc, deleteDoc, where } from 'firebase/firestore'
 import { db } from '../../firebase'
 import './AdminDashboard.css'
 
 function AdminDashboard() {
     const [orders, setOrders] = useState([])
     const [workers, setWorkers] = useState([])
+    const [pendingWorkers, setPendingWorkers] = useState([])
+    const [selectedOrder, setSelectedOrder] = useState(null)
+    const [selectedWorker, setSelectedWorker] = useState(null)
     const [stats, setStats] = useState({
         totalOrders: 0,
         pendingOrders: 0,
         activeOrders: 0,
         completedOrders: 0,
-        totalWorkers: 0
+        totalWorkers: 0,
+        totalRevenue: 0
     })
 
     useEffect(() => {
@@ -25,17 +29,22 @@ function AdminDashboard() {
             setOrders(ordersData)
 
             // Calculate stats
+            const revenue = ordersData
+                .filter(o => o.status === 'completed')
+                .reduce((sum, o) => sum + (o.price || 0), 0)
+
             setStats({
                 totalOrders: ordersData.length,
                 pendingOrders: ordersData.filter(o => o.status === 'pending').length,
                 activeOrders: ordersData.filter(o => o.status === 'accepted' || o.status === 'in_progress').length,
                 completedOrders: ordersData.filter(o => o.status === 'completed').length,
-                totalWorkers: 0 // Will update when we add workers listener
+                totalWorkers: 0,
+                totalRevenue: revenue
             })
         })
 
-        // Listen to workers in real-time
-        const workersQuery = query(collection(db, 'workers'))
+        // Listen to active workers
+        const workersQuery = query(collection(db, 'workers'), where('status', '==', 'active'))
         const unsubscribeWorkers = onSnapshot(workersQuery, (snapshot) => {
             const workersData = snapshot.docs.map(doc => ({
                 id: doc.id,
@@ -45,11 +54,100 @@ function AdminDashboard() {
             setStats(prev => ({ ...prev, totalWorkers: workersData.length }))
         })
 
+        // Listen to pending workers
+        const pendingQuery = query(collection(db, 'workers'), where('status', '==', 'pending'))
+        const unsubscribePending = onSnapshot(pendingQuery, (snapshot) => {
+            const pendingData = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }))
+            setPendingWorkers(pendingData)
+        })
+
         return () => {
             unsubscribeOrders()
             unsubscribeWorkers()
+            unsubscribePending()
         }
     }, [])
+
+    const handleCancelOrder = async (orderId) => {
+        if (!confirm('هل أنت متأكد من إلغاء هذا الطلب؟')) return
+
+        try {
+            await updateDoc(doc(db, 'orders', orderId), {
+                status: 'cancelled',
+                cancelledBy: 'admin',
+                cancelledAt: new Date()
+            })
+            alert('تم إلغاء الطلب بنجاح')
+            setSelectedOrder(null)
+        } catch (error) {
+            console.error('Error cancelling order:', error)
+            alert('حدث خطأ أثناء إلغاء الطلب')
+        }
+    }
+
+    const handleReassignWorker = async (orderId) => {
+        const workerName = prompt('أدخل اسم العامل الجديد:')
+        if (!workerName) return
+
+        try {
+            await updateDoc(doc(db, 'orders', orderId), {
+                workerName: workerName,
+                reassignedBy: 'admin',
+                reassignedAt: new Date()
+            })
+            alert('تم إعادة تعيين العامل بنجاح')
+            setSelectedOrder(null)
+        } catch (error) {
+            console.error('Error reassigning worker:', error)
+            alert('حدث خطأ أثناء إعادة التعيين')
+        }
+    }
+
+    const handleApproveWorker = async (workerId) => {
+        try {
+            await updateDoc(doc(db, 'workers', workerId), {
+                status: 'active',
+                approvedBy: 'admin',
+                approvedAt: new Date()
+            })
+            alert('تم الموافقة على العامل بنجاح')
+        } catch (error) {
+            console.error('Error approving worker:', error)
+            alert('حدث خطأ أثناء الموافقة')
+        }
+    }
+
+    const handleRejectWorker = async (workerId) => {
+        if (!confirm('هل أنت متأكد من رفض هذا العامل؟')) return
+
+        try {
+            await deleteDoc(doc(db, 'workers', workerId))
+            alert('تم رفض العامل')
+        } catch (error) {
+            console.error('Error rejecting worker:', error)
+            alert('حدث خطأ أثناء الرفض')
+        }
+    }
+
+    const handleSuspendWorker = async (workerId) => {
+        if (!confirm('هل أنت متأكد من إيقاف هذا العامل؟')) return
+
+        try {
+            await updateDoc(doc(db, 'workers', workerId), {
+                status: 'suspended',
+                suspendedBy: 'admin',
+                suspendedAt: new Date()
+            })
+            alert('تم إيقاف العامل')
+            setSelectedWorker(null)
+        } catch (error) {
+            console.error('Error suspending worker:', error)
+            alert('حدث خطأ أثناء الإيقاف')
+        }
+    }
 
     const getStatusColor = (status) => {
         const colors = {
@@ -77,7 +175,7 @@ function AdminDashboard() {
         <div className="admin-dashboard">
             <header className="admin-header">
                 <h1>🎯 لوحة تحكم المدير - كَشّاف</h1>
-                <p>مراقبة الطلبات والعمال في الوقت الفعلي</p>
+                <p>إدارة شاملة للطلبات والعمال</p>
             </header>
 
             {/* Stats Cards */}
@@ -117,7 +215,47 @@ function AdminDashboard() {
                         <p>العمال</p>
                     </div>
                 </div>
+                <div className="stat-card revenue">
+                    <div className="stat-icon">💰</div>
+                    <div className="stat-content">
+                        <h3>{stats.totalRevenue} ر.س</h3>
+                        <p>الإيرادات</p>
+                    </div>
+                </div>
             </div>
+
+            {/* Pending Workers Approval */}
+            {pendingWorkers.length > 0 && (
+                <div className="orders-section pending-workers-section">
+                    <h2>👷 عمال ينتظرون الموافقة ({pendingWorkers.length})</h2>
+                    <div className="workers-approval-grid">
+                        {pendingWorkers.map(worker => (
+                            <div key={worker.id} className="worker-approval-card">
+                                <div className="worker-info">
+                                    <h3>{worker.name}</h3>
+                                    <p>📱 {worker.phone}</p>
+                                    <p>💼 {worker.professions?.length || 0} مهنة</p>
+                                    <p>⭐ خبرة: {worker.experience}</p>
+                                </div>
+                                <div className="approval-actions">
+                                    <button
+                                        className="btn btn-approve"
+                                        onClick={() => handleApproveWorker(worker.id)}
+                                    >
+                                        ✅ موافقة
+                                    </button>
+                                    <button
+                                        className="btn btn-reject"
+                                        onClick={() => handleRejectWorker(worker.id)}
+                                    >
+                                        ❌ رفض
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {/* Orders Timeline */}
             <div className="orders-section">
@@ -171,6 +309,24 @@ function AdminDashboard() {
                                         </span>
                                     </div>
                                 </div>
+                                {order.status !== 'completed' && order.status !== 'cancelled' && (
+                                    <div className="admin-actions">
+                                        <button
+                                            className="btn btn-cancel"
+                                            onClick={() => handleCancelOrder(order.id)}
+                                        >
+                                            ❌ إلغاء الطلب
+                                        </button>
+                                        {order.workerId && (
+                                            <button
+                                                className="btn btn-reassign"
+                                                onClick={() => handleReassignWorker(order.id)}
+                                            >
+                                                🔄 إعادة تعيين عامل
+                                            </button>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         ))}
                     </div>
@@ -179,10 +335,10 @@ function AdminDashboard() {
 
             {/* Workers List */}
             <div className="workers-section">
-                <h2>👷 العمال المسجلين</h2>
+                <h2>👷 العمال النشطين ({workers.length})</h2>
                 {workers.length === 0 ? (
                     <div className="empty-state">
-                        <p>لا يوجد عمال مسجلين حتى الآن</p>
+                        <p>لا يوجد عمال نشطين حتى الآن</p>
                     </div>
                 ) : (
                     <div className="workers-grid">
@@ -193,6 +349,12 @@ function AdminDashboard() {
                                 <div className="worker-professions">
                                     {worker.professions?.length || 0} مهنة
                                 </div>
+                                <button
+                                    className="btn btn-suspend"
+                                    onClick={() => handleSuspendWorker(worker.id)}
+                                >
+                                    ⏸️ إيقاف
+                                </button>
                             </div>
                         ))}
                     </div>
