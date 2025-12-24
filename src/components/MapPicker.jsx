@@ -18,15 +18,30 @@ function MapPicker({ onLocationSelect, initialLocation }) {
         }
         setSelectedLocation(newLocation)
 
-        // Reverse geocoding to get address
+        // Immediately call onLocationSelect with coordinates
+        onLocationSelect({
+            ...newLocation,
+            address: 'جاري تحديد العنوان...'
+        })
+
+        // Reverse geocoding to get address (async)
         const geocoder = new window.google.maps.Geocoder()
         geocoder.geocode({ location: newLocation }, (results, status) => {
             if (status === 'OK' && results[0]) {
                 const formattedAddress = results[0].formatted_address
                 setAddress(formattedAddress)
+                // Update with actual address
                 onLocationSelect({
                     ...newLocation,
                     address: formattedAddress
+                })
+            } else {
+                // If geocoding fails, use coordinates as address
+                const coordsAddress = `${newLocation.lat.toFixed(6)}, ${newLocation.lng.toFixed(6)}`
+                setAddress(coordsAddress)
+                onLocationSelect({
+                    ...newLocation,
+                    address: coordsAddress
                 })
             }
         })
@@ -42,15 +57,30 @@ function MapPicker({ onLocationSelect, initialLocation }) {
                     }
                     setSelectedLocation(newLocation)
 
-                    // Get address
+                    // Immediately call onLocationSelect with coordinates
+                    onLocationSelect({
+                        ...newLocation,
+                        address: 'جاري تحديد العنوان...'
+                    })
+
+                    // Get address (async)
                     const geocoder = new window.google.maps.Geocoder()
                     geocoder.geocode({ location: newLocation }, (results, status) => {
                         if (status === 'OK' && results[0]) {
                             const formattedAddress = results[0].formatted_address
                             setAddress(formattedAddress)
+                            // Update with actual address
                             onLocationSelect({
                                 ...newLocation,
                                 address: formattedAddress
+                            })
+                        } else {
+                            // If geocoding fails, use coordinates
+                            const coordsAddress = `${newLocation.lat.toFixed(6)}, ${newLocation.lng.toFixed(6)}`
+                            setAddress(coordsAddress)
+                            onLocationSelect({
+                                ...newLocation,
+                                address: coordsAddress
                             })
                         }
                     })
